@@ -7,6 +7,8 @@
     "gatsby"
   ],
   "scripts": {
+    "production": "ENV=production gatsby build --prefix-paths",
+    "staging": "ENV=development gatsby build --prefix-paths",
     "develop": "gatsby develop",
     "start": "gatsby develop",
     "build": "gatsby build",
