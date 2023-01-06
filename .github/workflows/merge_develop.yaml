@@ -43,10 +43,10 @@ jobs:
           aws-region: ap-northeast-1
 
       - name: remove s3 objects
-        run: aws s3 rm s3://cicd-test-from-github-actions/* --quiet
+        run: aws s3 rm s3://cicd-test-from-github-actions --quiet
 
       - name: deploy to s3
-        run: aws s3 cp ./public s3://cicd-test-from-github-actions --quiet
+        run: aws s3 cp ./public s3://cicd-test-from-github-actions --recursive --quiet
 
       - name: notify result to slack
         uses: homoluctus/slatify@master
