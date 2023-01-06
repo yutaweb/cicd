@@ -1,0 +1,63 @@
+name: Deploy to production env when merged master
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  run:
+    name: CD for master merge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - name: setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: "14.x"
+
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: install
+        run: npm ci
+
+      - name: gatsby_master_environment_build
+        run: npm run production
+
+      - name: copy_required_data_to_public
+        run: |
+          chmod +x ./set_env_production.sh
+          ./set_env_production.sh
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: remove s3 objects
+        run: aws s3 rm s3://cicd-test-from-github-actions/* --quiet
+
+      - name: deploy to s3
+        run: aws s3 cp ./public s3://cicd-test-from-github-actions --quiet
+
+      - name: notify result to slack
+        uses: homoluctus/slatify@master
+        if: always()
+        with:
+          type: ${{ job.status }}
+          job_name: "*Deployment - Production Environment*"
+          mention_if: "always"
+          channel: "#github_actions_lp"
+          commit: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
