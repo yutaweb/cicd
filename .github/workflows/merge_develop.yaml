@@ -28,7 +28,7 @@ jobs:
         run: npm ci
 
       - name: gatsby_staging_environment_build
-        run: npm run staging
+        run: npm run build
 
       - name: copy_required_data_to_public
         run: |
