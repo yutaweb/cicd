@@ -5,6 +5,11 @@ on:
     branches:
       - master
 
+env:
+  AWS_ASSUME_ROLE: arn:aws:iam::022522308257:role/s3-pd-cd-role
+  AWS_REGION: ap-northeast-1
+  AWS_S3_BUCKET: cicd-test-from-github-actions
+
 jobs:
   run:
     name: CD for master merge
@@ -39,15 +44,14 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-1
+          role-to-assume: ${{ env.AWS_ASSUME_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: remove s3 objects
-        run: aws s3 rm s3://cicd-test-from-github-actions --recursive --quiet
+      - name: delete s3 objects
+        run: aws s3 rm s3://${{ env.AWS_S3_BUCKET }} --recursive --quiet
 
       - name: deploy to s3
-        run: aws s3 cp ./public s3://cicd-test-from-github-actions --recursive --quiet
+        run: aws s3 cp ./public s3://${{ env.AWS_S3_BUCKET }} --recursive --quiet
 
       - name: notify result to slack
         uses: homoluctus/slatify@master
