@@ -9,6 +9,9 @@ jobs:
   run:
     name: CD for staging merge
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@master
       - name: setup node
