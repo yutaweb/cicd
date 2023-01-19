@@ -49,11 +49,8 @@ jobs:
           role-to-assume: ${{ env.AWS_ASSUME_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: delete s3 objects
-        run: aws s3 rm s3://${{ env.AWS_S3_BUCKET }} --recursive --quiet
-
       - name: deploy to s3
-        run: aws s3 cp ./public s3://${{ env.AWS_S3_BUCKET }} --recursive --quiet
+        run: aws s3 sync ./public s3://${{ env.AWS_S3_BUCKET }} --quiet
 
       - name: notify result to slack
         uses: homoluctus/slatify@master
